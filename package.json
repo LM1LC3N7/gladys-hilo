@@ -1,6 +1,6 @@
 {
   "name": "gladys-hilo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Gladys Assistant external integration for Hilo (Hydro-Québec): challenges, devices and live power. Unofficial, not affiliated with Hilo or Hydro-Québec.",
   "type": "module",

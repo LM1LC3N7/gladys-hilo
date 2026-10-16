@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-16
+
 ### Added
 
 - Sign-in to the Hilo account: "Connect" opens the Hilo sign-in page (OAuth 2
@@ -34,4 +36,5 @@ the notes of the version's GitHub Release.
 - Documentation in French and English, with how it fits with the
   Hydro-Québec integration.
 
-[Unreleased]: https://github.com/LM1LC3N7/gladys-hilo/commits/main
+[Unreleased]: https://github.com/LM1LC3N7/gladys-hilo/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/LM1LC3N7/gladys-hilo/releases/tag/v0.1.1

@@ -1,177 +1,572 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Hilo (Hydro-Québec)",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Hilo by Hydro-Québec: peak challenges, thermostats, switches, lights and live power.",
+    "fr": "Hilo d'Hydro-Québec : défis de pointe, thermostats, interrupteurs, lumières, puissance."
   },
-  "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
+  "version": "0.1.0",
+  "docker_image": "ghcr.io/lm1lc3n7/gladys-hilo:0.1.0",
   "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "cover_image": "https://raw.githubusercontent.com/LM1LC3N7/gladys-hilo/main/cover.png",
+  "categories": ["energy", "climate"],
+  "transports": ["cloud"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your Hilo account",
+        "fr": "Votre compte Hilo"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Brings your Hilo home into Gladys, live: the challenges (pre-heat, reduction, recovery, rewards) as sensors and scene triggers, the thermostats, switches, plugs, dimmers, water heater controllers and the meter, with their power. 1. Click \"Connect\" below and sign in to Hilo. 2. Hilo then opens a Home Assistant page (the only address Hilo accepts for this app): copy the whole address of that page from the address bar. 3. Paste it in \"Finish the sign-in\" under Actions, within 30 minutes. Then add the devices from the Discovery tab. Unofficial, not affiliated with Hilo or Hydro-Québec.",
+        "fr": "Amène votre maison Hilo dans Gladys, en direct : les défis (préchauffage, réduction, reprise, récompenses) en capteurs et déclencheurs de scène, les thermostats, interrupteurs, prises, gradateurs, contrôleurs de chauffe-eau et le compteur, avec leur puissance. 1. Cliquez sur « Connecter » ci-dessous et connectez-vous à Hilo. 2. Hilo ouvre ensuite une page Home Assistant (la seule adresse que Hilo accepte pour cette application) : copiez l'adresse complète de cette page dans la barre d'adresse. 3. Collez-la dans « Terminer la connexion », dans les Actions, sous 30 minutes. Ajoutez ensuite les appareils depuis l'onglet Découverte. Non officiel, sans lien avec Hilo ni Hydro-Québec."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://github.com/LM1LC3N7/gladys-hilo/blob/main/docs/fr.md",
+          "label": {
+            "en": "Guide (French)",
+            "fr": "Guide (français)"
+          }
+        },
+        {
+          "url": "https://github.com/LM1LC3N7/gladys-hilo/blob/main/docs/en.md",
+          "label": {
+            "en": "Guide (English)",
+            "fr": "Guide (anglais)"
+          }
+        },
+        {
+          "url": "https://www.hiloenergie.com/",
+          "label": {
+            "en": "Hilo",
+            "fr": "Hilo"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
-      },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "key": "hilo_account",
+      "type": "account_link",
+      "label": {
+        "en": "Hilo account",
+        "fr": "Compte Hilo"
+      }
     },
     {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "key": "challenges",
+      "type": "section",
+      "label": {
+        "en": "Challenges",
+        "fr": "Défis"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "description": {
+        "en": "The challenges are the Hydro-Québec peak events Hilo manages for you. Their phases come from Hilo; the anticipation phase is extra: a scene trigger that many hours before the pre-heat, to get ready (0: none).",
+        "fr": "Les défis sont les événements de pointe d'Hydro-Québec que Hilo gère pour vous. Leurs phases viennent de Hilo ; la phase d'anticipation est en plus : un déclencheur de scène ce nombre d'heures avant le préchauffage, pour se préparer (0 : aucune)."
+      }
     },
     {
-      "key": "unit",
+      "key": "rate_plan",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "label": {
+        "en": "Hydro-Québec rate",
+        "fr": "Tarif Hydro-Québec"
+      },
+      "description": {
+        "en": "Used to follow the challenge details when Hilo does not say it. Automatic reads it from the challenges.",
+        "fr": "Sert à suivre le détail des défis quand Hilo ne l'indique pas. Automatique le lit dans les défis."
+      },
       "required": false,
-      "default": "celsius",
+      "default": "auto",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "auto",
+          "label": {
+            "en": "Automatic",
+            "fr": "Automatique"
+          }
+        },
+        {
+          "value": "CH",
+          "label": {
+            "en": "Rate D with winter credits",
+            "fr": "Tarif D avec crédits hivernaux"
+          }
+        },
+        {
+          "value": "Flex",
+          "label": {
+            "en": "Flex D",
+            "fr": "Flex D"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
+      "key": "anticipation_hours",
       "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "label": {
+        "en": "Anticipation before the pre-heat (h)",
+        "fr": "Anticipation avant le préchauffage (h)"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "Hours before the pre-heat when the \"anticipation\" phase starts (0 to 24, 0: none).",
+        "fr": "Heures avant le préchauffage où commence la phase « anticipation » (0 à 24, 0 : aucune)."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": 0,
+      "min": 0,
+      "max": 24
+    },
+    {
+      "key": "challenge_lock",
+      "type": "boolean",
+      "label": {
+        "en": "Lock the setpoints during a reduction",
+        "fr": "Bloquer les consignes pendant une réduction"
+      },
+      "description": {
+        "en": "Refuses setpoint changes from Gladys while a challenge reduction is in progress, so a scene cannot spoil the challenge.",
+        "fr": "Refuse les changements de consigne depuis Gladys pendant la réduction d'un défi, pour qu'une scène ne gâche pas le défi."
+      },
+      "required": false,
+      "default": false
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the feature names",
+        "fr": "Langue des noms des fonctionnalités"
+      },
+      "description": {
+        "en": "Used for the names of the features of the devices added from now on, and for the challenge texts.",
+        "fr": "Sert aux noms des fonctionnalités des appareils ajoutés désormais, et aux textes des défis."
+      },
+      "required": false,
+      "default": "fr",
+      "options": [
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français"
+          }
+        },
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
+      "key": "finish_sign_in",
+      "label": {
+        "en": "Finish the sign-in",
+        "fr": "Terminer la connexion"
+      },
+      "timeout_seconds": 60,
       "fields": [
         {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
+          "key": "redirect_url",
+          "type": "string",
+          "label": {
+            "en": "Address of the page shown after the Hilo sign-in",
+            "fr": "Adresse de la page affichée après la connexion Hilo"
+          },
+          "placeholder": {
+            "en": "https://my.home-assistant.io/redirect/oauth?state=…&code=…",
+            "fr": "https://my.home-assistant.io/redirect/oauth?state=…&code=…"
+          },
           "required": true
         }
       ]
+    },
+    {
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion"
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "key": "sign_out",
+      "label": {
+        "en": "Sign out",
+        "fr": "Se déconnecter"
+      },
+      "timeout_seconds": 30
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "challenge_announced",
+      "label": {
+        "en": "Hilo challenge announced",
+        "fr": "Défi Hilo annoncé"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "Hilo announced a new challenge (usually the day before).",
+        "fr": "Hilo a annoncé un nouveau défi (en général la veille)."
       },
       "fields": [
         {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
+          "key": "period",
           "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
+          "label": {
+            "en": "Period",
+            "fr": "Période"
+          },
           "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
+            {
+              "value": "am",
+              "label": {
+                "en": "Morning",
+                "fr": "Matin"
+              }
+            },
+            {
+              "value": "pm",
+              "label": {
+                "en": "Evening",
+                "fr": "Soir"
+              }
+            }
           ]
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "challenge_id",
+          "type": "number",
+          "label": {
+            "en": "Challenge number",
+            "fr": "Numéro du défi"
+          }
+        },
+        {
+          "key": "rate_plan",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Rate (CH or Flex)",
+            "fr": "Tarif (CH ou Flex)"
+          }
+        },
+        {
+          "key": "preheat_start",
+          "type": "string",
+          "label": {
+            "en": "Pre-heat start (UTC)",
+            "fr": "Début du préchauffage (UTC)"
+          }
+        },
+        {
+          "key": "reduction_start",
+          "type": "string",
+          "label": {
+            "en": "Reduction start (UTC)",
+            "fr": "Début de la réduction (UTC)"
+          }
+        },
+        {
+          "key": "reduction_end",
+          "type": "string",
+          "label": {
+            "en": "Reduction end (UTC)",
+            "fr": "Fin de la réduction (UTC)"
+          }
+        },
+        {
+          "key": "recovery_end",
+          "type": "string",
+          "label": {
+            "en": "Recovery end (UTC)",
+            "fr": "Fin de la reprise (UTC)"
+          }
+        },
+        {
+          "key": "reduction_start_local",
+          "type": "string",
+          "label": {
+            "en": "Reduction start (Québec time)",
+            "fr": "Début de la réduction (heure du Québec)"
+          }
+        },
+        {
+          "key": "reduction_end_local",
+          "type": "string",
+          "label": {
+            "en": "Reduction end (Québec time)",
+            "fr": "Fin de la réduction (heure du Québec)"
+          }
+        },
+        {
+          "key": "participating",
+          "type": "boolean",
+          "label": {
+            "en": "Participating",
+            "fr": "Participation"
+          }
         }
       ]
-    }
-  ],
-  "scene_actions": [
+    },
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "challenge_phase_started",
+      "label": {
+        "en": "Hilo challenge phase started",
+        "fr": "Phase de défi Hilo commencée"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "A phase of a challenge started: anticipation (if configured), pre-heat, reduction or recovery.",
+        "fr": "Une phase d'un défi a commencé : anticipation (si configurée), préchauffage, réduction ou reprise."
+      },
       "fields": [
         {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
+          "key": "phase",
+          "type": "multi_select",
+          "label": {
+            "en": "Phase",
+            "fr": "Phase"
+          },
+          "options": [
+            {
+              "value": "anticipation",
+              "label": {
+                "en": "Anticipation",
+                "fr": "Anticipation"
+              }
+            },
+            {
+              "value": "preheat",
+              "label": {
+                "en": "Pre-heat",
+                "fr": "Préchauffage"
+              }
+            },
+            {
+              "value": "reduction",
+              "label": {
+                "en": "Reduction",
+                "fr": "Réduction"
+              }
+            },
+            {
+              "value": "recovery",
+              "label": {
+                "en": "Recovery",
+                "fr": "Reprise"
+              }
+            }
+          ]
+        },
+        {
+          "key": "period",
+          "type": "multi_select",
+          "label": {
+            "en": "Period",
+            "fr": "Période"
+          },
+          "options": [
+            {
+              "value": "am",
+              "label": {
+                "en": "Morning",
+                "fr": "Matin"
+              }
+            },
+            {
+              "value": "pm",
+              "label": {
+                "en": "Evening",
+                "fr": "Soir"
+              }
+            }
+          ]
         }
       ],
-      "outputs": [
+      "variables": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "challenge_id",
+          "type": "number",
+          "label": {
+            "en": "Challenge number",
+            "fr": "Numéro du défi"
+          }
+        },
+        {
+          "key": "phase_label",
+          "type": "string",
+          "label": {
+            "en": "Phase name",
+            "fr": "Nom de la phase"
+          }
+        },
+        {
+          "key": "phase_end",
+          "type": "string",
+          "label": {
+            "en": "End of the phase (UTC)",
+            "fr": "Fin de la phase (UTC)"
+          }
+        },
+        {
+          "key": "phase_end_local",
+          "type": "string",
+          "label": {
+            "en": "End of the phase (Québec time)",
+            "fr": "Fin de la phase (heure du Québec)"
+          }
+        },
+        {
+          "key": "reduction_start_local",
+          "type": "string",
+          "label": {
+            "en": "Reduction start (Québec time)",
+            "fr": "Début de la réduction (heure du Québec)"
+          }
+        },
+        {
+          "key": "reduction_end_local",
+          "type": "string",
+          "label": {
+            "en": "Reduction end (Québec time)",
+            "fr": "Fin de la réduction (heure du Québec)"
+          }
+        },
+        {
+          "key": "rate_plan",
+          "type": "string",
+          "label": {
+            "en": "Rate (CH or Flex)",
+            "fr": "Tarif (CH ou Flex)"
+          }
         }
       ]
-    }
-  ],
-  "widgets": [
+    },
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "challenge_ended",
+      "label": {
+        "en": "Hilo challenge ended",
+        "fr": "Défi Hilo terminé"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "The recovery of a challenge ended, with what is known of its result (the final reward may come later).",
+        "fr": "La reprise d'un défi est terminée, avec ce qui est connu de son résultat (la récompense finale peut venir plus tard)."
+      },
+      "fields": [
+        {
+          "key": "period",
+          "type": "multi_select",
+          "label": {
+            "en": "Period",
+            "fr": "Période"
+          },
+          "options": [
+            {
+              "value": "am",
+              "label": {
+                "en": "Morning",
+                "fr": "Matin"
+              }
+            },
+            {
+              "value": "pm",
+              "label": {
+                "en": "Evening",
+                "fr": "Soir"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "challenge_id",
+          "type": "number",
+          "label": {
+            "en": "Challenge number",
+            "fr": "Numéro du défi"
+          }
+        },
+        {
+          "key": "status",
+          "type": "string",
+          "label": {
+            "en": "Result (Success, Failure…)",
+            "fr": "Résultat (Success, Failure…)"
+          }
+        },
+        {
+          "key": "reward",
+          "type": "number",
+          "label": {
+            "en": "Reward ($)",
+            "fr": "Récompense ($)"
+          }
+        },
+        {
+          "key": "consumption_kwh",
+          "type": "number",
+          "label": {
+            "en": "Consumption during the reduction (kWh)",
+            "fr": "Consommation pendant la réduction (kWh)"
+          }
+        },
+        {
+          "key": "baseline_kwh",
+          "type": "number",
+          "label": {
+            "en": "Reference consumption (kWh)",
+            "fr": "Consommation de référence (kWh)"
+          }
+        },
+        {
+          "key": "savings_kwh",
+          "type": "number",
+          "label": {
+            "en": "Energy saved (kWh)",
+            "fr": "Énergie économisée (kWh)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sign_in_needed",
+      "label": {
+        "en": "Hilo sign-in needed",
+        "fr": "Connexion Hilo à refaire"
+      },
+      "description": {
+        "en": "Hilo refused the session (expired or revoked): sign in again from the configuration.",
+        "fr": "Hilo a refusé la session (expirée ou révoquée) : reconnectez-vous depuis la configuration."
+      },
+      "variables": [
+        {
+          "key": "email",
+          "type": "string",
+          "label": {
+            "en": "Account e-mail",
+            "fr": "E-mail du compte"
+          }
+        },
+        {
+          "key": "reason",
+          "type": "string",
+          "label": {
+            "en": "Reason",
+            "fr": "Raison"
+          }
+        }
+      ]
     }
   ]
 }

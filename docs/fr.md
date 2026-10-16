@@ -1,67 +1,183 @@
-# Template de démonstration
+# Hilo (Hydro-Québec)
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Cette intégration amène dans Gladys votre maison **Hilo**, le service de
+maison intelligente d'Hydro-Québec, **en direct** : les **défis** (les
+événements de pointe qu'Hilo gère pour vous : préchauffage, réduction, reprise,
+récompenses) en capteurs et en déclencheurs de scène, et les appareils Hilo
+(thermostats, prises, interrupteurs et gradateurs, contrôleurs de chauffe-eau,
+compteur intelligent, stations météo) avec leur puissance. Elle utilise votre
+compte Hilo. Non officielle, sans lien avec Hilo ni Hydro-Québec.
+
+> **Version de développement (0.1).** Réalisée d'après le protocole de
+> python-hilo et de l'intégration Hilo de Home Assistant (dvd-dev/hilo), et
+> testée avec des réponses simulées, pas encore avec un vrai compte Hilo. Vos
+> retours sont les bienvenus sur le dépôt GitHub.
 
 ## Ce que vous obtenez
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+| Appareil                         | Dans Gladys                                                                                                                  |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Défis Hilo                       | défi (texte), défi annoncé, préchauffage, réduction et reprise en cours (0/1), début et fin de la réduction, récompenses ($) |
+| Thermostat (Hilo, Sinopé, Mysa…) | température, consigne (réglable), humidité, puissance, énergie                                                               |
+| Prise, interrupteur de charge    | marche/arrêt (réglable), puissance, énergie                                                                                  |
+| Contrôleur de chauffe-eau        | marche/arrêt (réglable), température de l'eau, puissance, énergie                                                            |
+| Interrupteur, gradateur, ampoule | lumière (réglable), luminosité (réglable), puissance, énergie                                                                |
+| Compteur intelligent             | puissance de la maison, énergie                                                                                              |
+| Station météo (Netatmo)          | température, humidité, CO2, bruit, pression, batterie                                                                        |
 
-## Configuration
+- **En direct** : les valeurs arrivent par le lien temps réel d'Hilo (le
+  même que l'application), pas par une interrogation périodique.
+- **Commandes** : la consigne des thermostats, la marche/arrêt des prises,
+  interrupteurs et chauffe-eau, la luminosité des gradateurs, quand Hilo
+  permet de les régler. La valeur s'affiche aussitôt, Hilo la confirme
+  ensuite.
+- **Énergie** : Hilo donne la puissance en direct mais pas de compteur
+  d'énergie. L'intégration calcule donc un index en kWh pour chaque appareil
+  qui mesure sa puissance (la puissance multipliée par le temps, comme les
+  compteurs « Riemann » de Home Assistant), que Gladys transforme en
+  consommation par demi-heure et en coût. C'est une estimation : elle
+  n'avance que pendant que le lien direct fonctionne. Voir plus bas comment
+  l'utiliser avec l'intégration Hydro-Québec.
+- **Badges** : un appareil qu'Hilo dit déconnecté passe à `unreachable`.
+- Le détecteur de fumée OneLink et la passerelle n'ont rien à afficher et ne
+  sont pas proposés.
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+## Installation
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+1. Installez l'intégration depuis le store Gladys.
+2. Dans l'onglet **Configuration**, cliquez sur **Connecter** (Compte Hilo) :
+   la page de connexion d'Hilo s'ouvre. Connectez-vous avec votre compte Hilo.
+3. Hilo ouvre ensuite une page **Home Assistant** (my.home-assistant.io) :
+   c'est normal, c'est la seule adresse qu'Hilo accepte pour cette
+   application (celle de l'intégration Home Assistant, que l'intégration
+   Gladys réutilise). Vous n'avez pas besoin de Home Assistant : **copiez
+   l'adresse complète de cette page** dans la barre d'adresse du navigateur
+   (elle commence par `https://my.home-assistant.io/redirect/oauth?` et
+   contient `code=`).
+4. Revenez dans Gladys, ouvrez l'action **Terminer la connexion**, collez
+   l'adresse et validez, dans les 30 minutes. Le statut passe à « Connecté à
+   Hilo ».
+5. Ouvrez l'onglet **Découverte** et ajoutez les appareils voulus, dont
+   **Défis Hilo**.
 
-## Actions
+La session est gardée dans le volume `/data` de l'intégration : un
+redémarrage ne demande pas de se reconnecter. Hilo renouvelle la session tant
+que l'intégration tourne ; si Hilo la refuse un jour (session expirée, mot de
+passe changé), le statut le dit, le déclencheur **Connexion Hilo à refaire**
+se déclenche, et il suffit de refaire les étapes 2 à 4.
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+## Options
+
+| Option                                      | Par défaut  | Rôle                                                                                                                        |
+| ------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Tarif Hydro-Québec                          | Automatique | Tarif D avec crédits hivernaux (CH) ou Flex D, pour suivre le détail des défis quand Hilo ne l'indique pas                  |
+| Anticipation avant le préchauffage (h)      | 0 (aucune)  | Une phase « anticipation » ce nombre d'heures avant le préchauffage, pour un déclencheur de scène plus tôt (0 à 24)         |
+| Bloquer les consignes pendant une réduction | non         | Refuse les changements de consigne depuis Gladys (tableau de bord, scènes) pendant la réduction, pour ne pas gâcher le défi |
+| Langue des noms des fonctionnalités         | français    | Noms des fonctionnalités des appareils ajoutés désormais, et textes des défis                                               |
+
+Actions : **Terminer la connexion**, **Tester la connexion** (compte,
+emplacement, nombre d'appareils, lien direct, prochain défi) et **Se
+déconnecter** (oublie la session).
+
+## Les défis
+
+Un défi Hilo suit les phases qu'Hilo publie (en général la veille) :
+
+1. **annoncé** : le défi est prévu ;
+2. **anticipation** (si vous l'avez configurée) : ce nombre d'heures avant le
+   préchauffage ;
+3. **préchauffage** : Hilo chauffe un peu plus avant la pointe ;
+4. **réduction** : la pointe, Hilo baisse le chauffage ; c'est la
+   consommation de cette période qui compte ;
+5. **reprise** : retour progressif à la normale ;
+6. **terminé** : après la reprise ; la récompense finale peut arriver plus
+   tard.
+
+L'appareil **Défis Hilo** montre le prochain défi (ou celui en cours) :
+
+- **Défi** : un texte, par exemple « Défi le dim. 4 janv. : réduction 16 h 00
+  – 20 h 00 » ou « Réduction jusqu'à 20 h 00 » ;
+- **Défi annoncé**, **Préchauffage en cours**, **Réduction en cours**,
+  **Reprise en cours** : 1 ou 0, pour les conditions de scène (« si une
+  réduction est en cours… ») ;
+- **Début / fin de la prochaine réduction** : en heure du Québec ;
+- **Récompense estimée** (pendant le défi), **Récompense du dernier défi**,
+  **Récompenses de la saison** (en $, crédits hivernaux du tarif D ; le tarif
+  Flex D n'a pas de récompense) ;
+- **Consommation de référence** et **Consommation pendant la réduction** (en
+  kWh), quand Hilo les donne.
+
+Les heures des défis sont celles du Québec (America/Toronto), quel que soit le
+fuseau de votre Gladys.
 
 ## Scènes
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
+Déclencheurs :
 
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
+| Déclencheur                  | Filtres                                                         | Variables                                                                                       |
+| ---------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Défi Hilo annoncé            | période (matin, soir)                                           | numéro, tarif, début du préchauffage, début et fin de la réduction (UTC et heure du Québec)     |
+| Phase de défi Hilo commencée | phase (anticipation, préchauffage, réduction, reprise), période | numéro, nom de la phase, fin de la phase (UTC et heure du Québec), début et fin de la réduction |
+| Défi Hilo terminé            | période                                                         | numéro, résultat, récompense, consommation, référence, énergie économisée (kWh)                 |
+| Connexion Hilo à refaire     | —                                                               | e-mail du compte, raison                                                                        |
 
-## Tableau de bord
+Exemples :
 
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+- **Phase commencée : réduction** → baisser la consigne des radiateurs qui ne
+  sont pas Hilo, couper le chauffe-eau ou la borne de recharge, envoyer un
+  message ;
+- **Phase commencée : anticipation** (avec 12 h configurées) → lancer le
+  lave-vaisselle avant la pointe ;
+- **Défi terminé** → envoyer la récompense par message.
+
+Chaque événement est envoyé une seule fois, même si Gladys ou l'intégration
+redémarre au milieu d'un défi. Une phase manquée pendant un arrêt est envoyée
+au redémarrage si elle est encore en cours.
+
+## Avec l'intégration Hydro-Québec
+
+L'intégration [Hydro-Québec](https://github.com/LM1LC3N7/Gladys-Hydro-Quebec)
+lit votre **espace client Hydro-Québec** : la consommation officielle par
+demi-heure (avec un jour de décalage), les contrats Tarif D et Flex D avec
+leurs coûts, et les pointes annoncées par Hydro-Québec. Hilo lit votre
+**maison Hilo** : les appareils en direct, leur puissance, et les défis tels
+qu'Hilo les gère. Les deux se complètent :
+
+| Besoin                                                   | Intégration                                 |
+| -------------------------------------------------------- | ------------------------------------------- |
+| Consommation facturée, coût, contrat Tarif D / Flex D    | Hydro-Québec (compteur principal de Gladys) |
+| Puissance en direct de la maison, par appareil           | Hilo                                        |
+| Piloter thermostats, prises, chauffe-eau                 | Hilo                                        |
+| Pointes critiques d'Hydro-Québec (pour tous les clients) | Hydro-Québec                                |
+| Phases et récompenses des défis Hilo, anticipation       | Hilo                                        |
+
+Conseil pour le tableau de bord énergie : gardez la consommation Hydro-Québec
+comme compteur principal (c'est elle qui est facturée), et rattachez-lui les
+index d'énergie des appareils Hilo (thermostats, chauffe-eau, prises) pour
+voir leur part. N'ajoutez pas l'énergie du compteur intelligent Hilo en plus de
+celle d'Hydro-Québec : c'est la même consommation, comptée deux fois.
+
+## Limites
+
+- **Un emplacement** : le premier du compte, comme l'intégration Home
+  Assistant.
+- **Connexion** : Hilo n'accepte que l'adresse de retour de Home Assistant ;
+  d'où le copier-coller de l'étape 3. Si Hilo change cette règle, il faudra
+  une nouvelle version.
+- **API non officielle** : c'est celle de l'application Hilo, telle que
+  python-hilo la documente. Hilo peut la changer sans prévenir (cela arrive à
+  chaque saison de défis) ; l'intégration Home Assistant suit ces changements
+  et cette intégration les suivra.
+- Pas encore : le mode des thermostats, la couleur des ampoules, les
+  notifications Hilo, la météo Hilo.
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **« Cette adresse ne contient pas de code de connexion »** : copiez toute
+  l'adresse de la page Home Assistant, pas seulement le début.
+- **« Hilo a refusé le code »** : un code ne sert qu'une fois et quelques
+  minutes ; recommencez à l'étape 2.
+- **« Lien direct Hilo perdu »** : l'intégration se reconnecte seule (5 s,
+  puis jusqu'à 5 minutes entre deux essais).
+- Les journaux de l'intégration donnent le détail ; `LOG_LEVEL=debug` en
+  montre plus.

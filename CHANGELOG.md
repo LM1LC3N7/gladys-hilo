@@ -12,44 +12,26 @@ the notes of the version's GitHub Release.
 
 ### Added
 
-- A working example of scene triggers, scene actions and dashboard widgets
-  (Gladys 5.1.0 or later).
-- `CHANGELOG.md`, rolled by the Release workflow.
-- A GitHub Release for every version, with its changelog section as notes: the
-  Gladys Supervision page links each version to the repository's releases.
-- CI runs the tests on Node 22 and 24, and builds the Docker image.
-- Dependabot keeps the npm dependencies and the GitHub Actions up to date.
-- `SECURITY.md` (how to report a vulnerability) and `CLAUDE.md` (project rules
-  for contributors and coding assistants).
-- Manifest tests: `version` matches `package.json`, `docker_image` is tagged
-  with it, descriptions hold 10 to 100 characters, placeholders are
-  multi-language objects.
-- The latitude and longitude fields show an example value as placeholder.
+- Sign-in to the Hilo account: "Connect" opens the Hilo sign-in page (OAuth 2
+  with PKCE, as python-hilo and Home Assistant), the address of the last page
+  is pasted in "Finish the sign-in"; the session is kept in `/data` and
+  renewed; "Test the connection" and "Sign out" buttons.
+- Live link with Hilo: the DeviceHub and ChallengeHub (SignalR) and the
+  GraphQL digital twin stream, reconnected by themselves.
+- One Gladys device per Hilo device: thermostats (temperature, setpoint,
+  humidity), plugs and load controllers (on/off), water heater controllers
+  (on/off, water temperature), switches, dimmers and bulbs (light,
+  brightness), the smart meter, the Netatmo weather stations; power and an
+  energy index computed from it; unreachable badge.
+- Commands: setpoints, on/off and brightness.
+- The "Hilo challenges" device: challenge text, announced, pre-heat,
+  reduction and recovery flags, reduction start and end, estimated and last
+  rewards, rewards of the season, reference and measured consumption.
+- Scene triggers "Hilo challenge announced", "Hilo challenge phase started"
+  (anticipation, pre-heat, reduction, recovery), "Hilo challenge ended" and
+  "Hilo sign-in needed"; an optional anticipation phase hours before the
+  pre-heat; an optional lock of the setpoints during a reduction.
+- Documentation in French and English, with how it fits with the
+  Hydro-Québec integration.
 
-### Changed
-
-- Node.js 22 or later is required (Node 20 is end-of-life).
-- Integration SDK 0.15.0. The tests now run against the fake Gladys of the
-  SDK, which refuses the payloads Gladys refuses.
-- The refresh interval is one minute minimum, the fastest Gladys polls a
-  device. The plug's power is only sent when it changes, and every 30
-  minutes otherwise.
-
-### Fixed
-
-- Gladys refused the devices of the Discovery tab: the weather station and
-  the plug declared their poll frequency in seconds instead of one of the
-  values Gladys accepts, and were never polled. They now poll every minute,
-  and the readings follow the refresh interval of the configuration.
-
-- The release commit no longer fails `npm run format:check`: the Release
-  workflow updates the manifest `version` and `docker_image` in place instead
-  of re-printing the whole file with `jq`.
-- The integration can write to `/data`: the image creates the directory owned
-  by the `node` user, a new Docker volume was owned by root.
-- A sub-container running the integration's own image follows it to the new
-  tag at each release, as well as in the manifest of the build summary: it kept
-  the previous tag, which may not exist on the registry. Sub-containers on a
-  third-party image (a broker, a database...) keep theirs.
-
-[Unreleased]: https://github.com/GladysAssistant/integration-template-js/commits/main
+[Unreleased]: https://github.com/LM1LC3N7/gladys-hilo/commits/main

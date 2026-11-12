@@ -137,3 +137,8 @@ test('labels and placeholders are multi-language objects with English and French
     }
   }
 });
+
+test('the catalog countries: Canada, which needs Gladys >= 5.3.0', () => {
+  assert.deepEqual(manifest.countries, ['CA']);
+  assert.ok(isAtLeast(minGladysVersion(), [5, 3, 0]), 'countries needs Gladys 5.3.0');
+});
